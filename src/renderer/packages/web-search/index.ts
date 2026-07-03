@@ -8,8 +8,13 @@ import type WebSearch from './base'
 import { BingSearch } from './bing'
 import { BingNewsSearch } from './bing-news'
 import { BochaSearch } from './bocha'
+import { BraveSearch } from './brave'
 import { ChatboxSearch } from './chatbox-search'
+import { ExaSearch } from './exa'
+import { GoogleSearch } from './google'
+import { KagiSearch } from './kagi'
 import { QueritSearch } from './querit'
+import { SearXNGSearch } from './searxng'
 import { TavilySearch } from './tavily'
 
 const MAX_CONTEXT_ITEMS = 10
@@ -62,6 +67,39 @@ function getSearchProviders() {
           settings.webSearch.queritTimeRange
         )
       )
+      break
+    case 'google':
+      if (!settings.webSearch.googleCseApiKey) {
+        throw ChatboxAIAPIError.fromCodeName('google_cse_api_key_required', 'google_cse_api_key_required')
+      }
+      if (!settings.webSearch.googleCseId) {
+        throw ChatboxAIAPIError.fromCodeName('google_cse_id_required', 'google_cse_id_required')
+      }
+      selectedProviders.push(new GoogleSearch(settings.webSearch.googleCseApiKey, settings.webSearch.googleCseId))
+      break
+    case 'brave':
+      if (!settings.webSearch.braveApiKey) {
+        throw ChatboxAIAPIError.fromCodeName('brave_api_key_required', 'brave_api_key_required')
+      }
+      selectedProviders.push(new BraveSearch(settings.webSearch.braveApiKey))
+      break
+    case 'kagi':
+      if (!settings.webSearch.kagiApiKey) {
+        throw ChatboxAIAPIError.fromCodeName('kagi_api_key_required', 'kagi_api_key_required')
+      }
+      selectedProviders.push(new KagiSearch(settings.webSearch.kagiApiKey))
+      break
+    case 'exa':
+      if (!settings.webSearch.exaApiKey) {
+        throw ChatboxAIAPIError.fromCodeName('exa_api_key_required', 'exa_api_key_required')
+      }
+      selectedProviders.push(new ExaSearch(settings.webSearch.exaApiKey))
+      break
+    case 'searxng':
+      if (!settings.webSearch.searxngUrl) {
+        throw ChatboxAIAPIError.fromCodeName('searxng_url_required', 'searxng_url_required')
+      }
+      selectedProviders.push(new SearXNGSearch(settings.webSearch.searxngUrl))
       break
     default:
       throw new Error(`Unsupported search provider: ${provider}`)

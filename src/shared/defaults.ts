@@ -131,6 +131,12 @@ export function settings(): Settings {
         queritApiKey: '',
         queritMaxResults: 5,
         queritTimeRange: 'none',
+        googleCseApiKey: '',
+        googleCseId: '',
+        braveApiKey: '',
+        kagiApiKey: '',
+        exaApiKey: '',
+        searxngUrl: '',
       },
       knowledgeBase: {
         models: {

@@ -1,4 +1,4 @@
-import { Button, Flex, PasswordInput, Select, Stack, Text, Title, Tooltip } from '@mantine/core'
+import { Button, Flex, PasswordInput, Select, Stack, Text, TextInput, Title, Tooltip } from '@mantine/core'
 import { IconCheck, IconX } from '@tabler/icons-react'
 import { createFileRoute } from '@tanstack/react-router'
 import { ofetch } from 'ofetch'
@@ -43,6 +43,105 @@ export function RouteComponent() {
         setQueritAvailable(false)
       } finally {
         setCheckingQuerit(false)
+      }
+    }
+  }
+
+  const [checkingBrave, setCheckingBrave] = useState(false)
+  const [braveAvailable, setBraveAvailable] = useState<boolean>()
+  const checkBrave = async () => {
+    if (extension.webSearch.braveApiKey) {
+      setCheckingBrave(true)
+      setBraveAvailable(undefined)
+      try {
+        await ofetch('https://api.search.brave.com/res/v1/web/search', {
+          headers: { Accept: 'application/json', 'X-Subscription-Token': extension.webSearch.braveApiKey },
+          query: { q: 'Chatbox', count: '1' },
+        })
+        setBraveAvailable(true)
+      } catch (e) {
+        setBraveAvailable(false)
+      } finally {
+        setCheckingBrave(false)
+      }
+    }
+  }
+
+  const [checkingKagi, setCheckingKagi] = useState(false)
+  const [kagiAvailable, setKagiAvailable] = useState<boolean>()
+  const checkKagi = async () => {
+    if (extension.webSearch.kagiApiKey) {
+      setCheckingKagi(true)
+      setKagiAvailable(undefined)
+      try {
+        await ofetch('https://kagi.com/api/v0/search', {
+          headers: { Authorization: `Bot ${extension.webSearch.kagiApiKey}` },
+          query: { q: 'Chatbox', limit: '1' },
+        })
+        setKagiAvailable(true)
+      } catch (e) {
+        setKagiAvailable(false)
+      } finally {
+        setCheckingKagi(false)
+      }
+    }
+  }
+
+  const [checkingExa, setCheckingExa] = useState(false)
+  const [exaAvailable, setExaAvailable] = useState<boolean>()
+  const checkExa = async () => {
+    if (extension.webSearch.exaApiKey) {
+      setCheckingExa(true)
+      setExaAvailable(undefined)
+      try {
+        await ofetch('https://api.exa.ai/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-api-key': extension.webSearch.exaApiKey },
+          body: { query: 'Chatbox', numResults: 1 },
+        })
+        setExaAvailable(true)
+      } catch (e) {
+        setExaAvailable(false)
+      } finally {
+        setCheckingExa(false)
+      }
+    }
+  }
+
+  const [checkingGoogle, setCheckingGoogle] = useState(false)
+  const [googleAvailable, setGoogleAvailable] = useState<boolean>()
+  const checkGoogle = async () => {
+    if (extension.webSearch.googleCseApiKey && extension.webSearch.googleCseId) {
+      setCheckingGoogle(true)
+      setGoogleAvailable(undefined)
+      try {
+        await ofetch('https://www.googleapis.com/customsearch/v1', {
+          query: { key: extension.webSearch.googleCseApiKey, cx: extension.webSearch.googleCseId, q: 'Chatbox', num: '1' },
+        })
+        setGoogleAvailable(true)
+      } catch (e) {
+        setGoogleAvailable(false)
+      } finally {
+        setCheckingGoogle(false)
+      }
+    }
+  }
+
+  const [checkingSearXNG, setCheckingSearXNG] = useState(false)
+  const [searxngAvailable, setSearxngAvailable] = useState<boolean>()
+  const checkSearXNG = async () => {
+    if (extension.webSearch.searxngUrl) {
+      setCheckingSearXNG(true)
+      setSearxngAvailable(undefined)
+      try {
+        await ofetch(`${extension.webSearch.searxngUrl.replace(/\/$/, '')}/search`, {
+          query: { q: 'Chatbox', format: 'json', categories: 'general' },
+        })
+        setSearxngAvailable(true)
+      } catch (e) {
+        setSearxngAvailable(false)
+      } finally {
+        setCheckingSearXNG(false)
       }
     }
   }
@@ -102,6 +201,11 @@ export function RouteComponent() {
         data={[
           { value: 'build-in', label: 'Chatbox AI' },
           { value: 'bing', label: 'Bing Search (Free)' },
+          { value: 'google', label: 'Google Custom Search' },
+          { value: 'brave', label: 'Brave Search' },
+          { value: 'kagi', label: 'Kagi' },
+          { value: 'exa', label: 'Exa' },
+          { value: 'searxng', label: 'SearXNG (Self-hosted)' },
           { value: 'tavily', label: 'Tavily' },
           { value: 'bocha', label: 'BoCha' },
           { value: 'querit', label: 'Querit' },
@@ -114,7 +218,7 @@ export function RouteComponent() {
               ...extension,
               webSearch: {
                 ...extension.webSearch,
-                provider: e as 'build-in' | 'bing' | 'tavily' | 'bocha' | 'querit',
+                provider: e as 'build-in' | 'bing' | 'tavily' | 'bocha' | 'querit' | 'google' | 'brave' | 'kagi' | 'exa' | 'searxng',
               },
             },
           })
@@ -408,6 +512,189 @@ export function RouteComponent() {
               />
             </Stack>
           </Stack>
+        </Stack>
+      )}
+      {/* Google Custom Search */}
+      {extension.webSearch.provider === 'google' && (
+        <Stack gap="xs">
+          <Text fw="600">{t('Google Custom Search API Key')}</Text>
+          <Flex align="center" gap="xs">
+            <PasswordInput
+              flex={1}
+              maw={320}
+              value={extension.webSearch.googleCseApiKey}
+              onChange={(e) => {
+                setGoogleAvailable(undefined)
+                setSettings({ extension: { ...extension, webSearch: { ...extension.webSearch, googleCseApiKey: e.currentTarget.value } } })
+              }}
+              error={googleAvailable === false}
+            />
+          </Flex>
+          <Text fw="600">{t('Search Engine ID (cx)')}</Text>
+          <Flex align="center" gap="xs">
+            <TextInput
+              flex={1}
+              maw={320}
+              value={extension.webSearch.googleCseId}
+              onChange={(e) => {
+                setGoogleAvailable(undefined)
+                setSettings({ extension: { ...extension, webSearch: { ...extension.webSearch, googleCseId: e.currentTarget.value } } })
+              }}
+              error={googleAvailable === false}
+            />
+            <Button color="blue" variant="light" onClick={checkGoogle} loading={checkingGoogle}
+              disabled={!extension.webSearch.googleCseApiKey?.trim() || !extension.webSearch.googleCseId?.trim()}>
+              {t('Check')}
+            </Button>
+          </Flex>
+          {typeof googleAvailable === 'boolean' ? (
+            googleAvailable ? (
+              <Text size="xs" c="chatbox-success">{t('Connection successful!')}</Text>
+            ) : (
+              <Text size="xs" c="chatbox-error">{t('API key or Search Engine ID invalid!')}</Text>
+            )
+          ) : null}
+          <Button variant="transparent" size="compact-xs" px={0} className="self-start"
+            onClick={() => platform.openLink('https://programmablesearchengine.google.com/')}>
+            {t('Get API Key & Search Engine ID')}
+          </Button>
+        </Stack>
+      )}
+      {/* Brave Search API Key */}
+      {extension.webSearch.provider === 'brave' && (
+        <Stack gap="xs">
+          <Text fw="600">{t('Brave Search API Key')}</Text>
+          <Flex align="center" gap="xs">
+            <PasswordInput
+              flex={1}
+              maw={320}
+              value={extension.webSearch.braveApiKey}
+              onChange={(e) => {
+                setBraveAvailable(undefined)
+                setSettings({ extension: { ...extension, webSearch: { ...extension.webSearch, braveApiKey: e.currentTarget.value } } })
+              }}
+              error={braveAvailable === false}
+            />
+            <Button color="blue" variant="light" onClick={checkBrave} loading={checkingBrave}
+              disabled={!extension.webSearch.braveApiKey?.trim()}>
+              {t('Check')}
+            </Button>
+          </Flex>
+          {typeof braveAvailable === 'boolean' ? (
+            braveAvailable ? (
+              <Text size="xs" c="chatbox-success">{t('Connection successful!')}</Text>
+            ) : (
+              <Text size="xs" c="chatbox-error">{t('API key invalid!')}</Text>
+            )
+          ) : null}
+          <Button variant="transparent" size="compact-xs" px={0} className="self-start"
+            onClick={() => platform.openLink('https://brave.com/search/api/')}>
+            {t('Get API Key')}
+          </Button>
+        </Stack>
+      )}
+      {/* Kagi API Key */}
+      {extension.webSearch.provider === 'kagi' && (
+        <Stack gap="xs">
+          <Text fw="600">{t('Kagi API Key')}</Text>
+          <Flex align="center" gap="xs">
+            <PasswordInput
+              flex={1}
+              maw={320}
+              value={extension.webSearch.kagiApiKey}
+              onChange={(e) => {
+                setKagiAvailable(undefined)
+                setSettings({ extension: { ...extension, webSearch: { ...extension.webSearch, kagiApiKey: e.currentTarget.value } } })
+              }}
+              error={kagiAvailable === false}
+            />
+            <Button color="blue" variant="light" onClick={checkKagi} loading={checkingKagi}
+              disabled={!extension.webSearch.kagiApiKey?.trim()}>
+              {t('Check')}
+            </Button>
+          </Flex>
+          {typeof kagiAvailable === 'boolean' ? (
+            kagiAvailable ? (
+              <Text size="xs" c="chatbox-success">{t('Connection successful!')}</Text>
+            ) : (
+              <Text size="xs" c="chatbox-error">{t('API key invalid!')}</Text>
+            )
+          ) : null}
+          <Button variant="transparent" size="compact-xs" px={0} className="self-start"
+            onClick={() => platform.openLink('https://kagi.com/settings?p=api')}>
+            {t('Get API Key')}
+          </Button>
+        </Stack>
+      )}
+      {/* Exa API Key */}
+      {extension.webSearch.provider === 'exa' && (
+        <Stack gap="xs">
+          <Text fw="600">{t('Exa API Key')}</Text>
+          <Flex align="center" gap="xs">
+            <PasswordInput
+              flex={1}
+              maw={320}
+              value={extension.webSearch.exaApiKey}
+              onChange={(e) => {
+                setExaAvailable(undefined)
+                setSettings({ extension: { ...extension, webSearch: { ...extension.webSearch, exaApiKey: e.currentTarget.value } } })
+              }}
+              error={exaAvailable === false}
+            />
+            <Button color="blue" variant="light" onClick={checkExa} loading={checkingExa}
+              disabled={!extension.webSearch.exaApiKey?.trim()}>
+              {t('Check')}
+            </Button>
+          </Flex>
+          {typeof exaAvailable === 'boolean' ? (
+            exaAvailable ? (
+              <Text size="xs" c="chatbox-success">{t('Connection successful!')}</Text>
+            ) : (
+              <Text size="xs" c="chatbox-error">{t('API key invalid!')}</Text>
+            )
+          ) : null}
+          <Text size="xs" c="chatbox-gray">{t('Exa uses neural/semantic search — great for research and AI-native queries.')}</Text>
+          <Button variant="transparent" size="compact-xs" px={0} className="self-start"
+            onClick={() => platform.openLink('https://dashboard.exa.ai/')}>
+            {t('Get API Key')}
+          </Button>
+        </Stack>
+      )}
+      {/* SearXNG Instance URL */}
+      {extension.webSearch.provider === 'searxng' && (
+        <Stack gap="xs">
+          <Text fw="600">{t('SearXNG Instance URL')}</Text>
+          <Flex align="center" gap="xs">
+            <TextInput
+              flex={1}
+              maw={320}
+              placeholder="https://searx.example.com"
+              value={extension.webSearch.searxngUrl}
+              onChange={(e) => {
+                setSearxngAvailable(undefined)
+                setSettings({ extension: { ...extension, webSearch: { ...extension.webSearch, searxngUrl: e.currentTarget.value } } })
+              }}
+              error={searxngAvailable === false}
+            />
+            <Button color="blue" variant="light" onClick={checkSearXNG} loading={checkingSearXNG}
+              disabled={!extension.webSearch.searxngUrl?.trim()}>
+              {t('Check')}
+            </Button>
+          </Flex>
+          {typeof searxngAvailable === 'boolean' ? (
+            searxngAvailable ? (
+              <Text size="xs" c="chatbox-success">{t('Connection successful!')}</Text>
+            ) : (
+              <Text size="xs" c="chatbox-error">{t('Instance unreachable or JSON format not enabled!')}</Text>
+            )
+          ) : null}
+          <Text size="xs" c="chatbox-gray">
+            {t('Self-hosted SearXNG instance. Enable JSON format in your instance settings (search.formats: [json]).')}
+          </Text>
+          <Button variant="transparent" size="compact-xs" px={0} className="self-start"
+            onClick={() => platform.openLink('https://searxng.github.io/searxng/')}>
+            {t('SearXNG documentation')}
+          </Button>
         </Stack>
       )}
       {extension.webSearch.provider !== 'build-in' && !licenseKey && (
