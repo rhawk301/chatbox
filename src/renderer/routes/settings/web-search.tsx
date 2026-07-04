@@ -201,6 +201,7 @@ export function RouteComponent() {
         data={[
           { value: 'build-in', label: 'Chatbox AI' },
           { value: 'bing', label: 'Bing Search (Free)' },
+          { value: 'duckduckgo', label: 'DuckDuckGo (Free)' },
           { value: 'google', label: 'Google Custom Search' },
           { value: 'brave', label: 'Brave Search' },
           { value: 'kagi', label: 'Kagi' },
@@ -554,9 +555,12 @@ export function RouteComponent() {
               <Text size="xs" c="chatbox-error">{t('API key or Search Engine ID invalid!')}</Text>
             )
           ) : null}
+          <Text size="xs" c="chatbox-gray">
+            {t('Create a search engine at Google Programmable Search Engine, set it to "Search the entire web", then copy the Search Engine ID (cx) from its Overview page. The API key comes from Google Cloud Console — the CSE dashboard has a shortcut to it.')}
+          </Text>
           <Button variant="transparent" size="compact-xs" px={0} className="self-start"
             onClick={() => platform.openLink('https://programmablesearchengine.google.com/')}>
-            {t('Get API Key & Search Engine ID')}
+            {t('Create Search Engine & Get API Key')}
           </Button>
         </Stack>
       )}
@@ -587,6 +591,9 @@ export function RouteComponent() {
               <Text size="xs" c="chatbox-error">{t('API key invalid!')}</Text>
             )
           ) : null}
+          <Text size="xs" c="chatbox-gray">
+            {t('Brave Search is privacy-focused with its own independent web index (not Bing). Free tier: 2,000 queries/month.')}
+          </Text>
           <Button variant="transparent" size="compact-xs" px={0} className="self-start"
             onClick={() => platform.openLink('https://brave.com/search/api/')}>
             {t('Get API Key')}
@@ -620,6 +627,9 @@ export function RouteComponent() {
               <Text size="xs" c="chatbox-error">{t('API key invalid!')}</Text>
             )
           ) : null}
+          <Text size="xs" c="chatbox-gray">
+            {t('Kagi is a paid search engine with no ads and no tracking. Requires an active Kagi subscription; API usage is billed per search.')}
+          </Text>
           <Button variant="transparent" size="compact-xs" px={0} className="self-start"
             onClick={() => platform.openLink('https://kagi.com/settings?p=api')}>
             {t('Get API Key')}

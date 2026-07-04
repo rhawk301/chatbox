@@ -7,6 +7,7 @@ import { ChatboxAIAPIError } from '../../../shared/models/errors'
 import type WebSearch from './base'
 import { BingSearch } from './bing'
 import { BingNewsSearch } from './bing-news'
+import { DuckDuckGoSearch } from './duckduckgo'
 import { BochaSearch } from './bocha'
 import { BraveSearch } from './brave'
 import { ChatboxSearch } from './chatbox-search'
@@ -43,6 +44,9 @@ function getSearchProviders() {
       if (language !== 'zh-Hans' && platform.type !== 'mobile') {
         selectedProviders.push(new BingNewsSearch()) // 国内和移动端容易被重定向到 Bing 首页
       }
+      break
+    case 'duckduckgo':
+      selectedProviders.push(new DuckDuckGoSearch())
       break
     case 'tavily':
       if (!settings.webSearch.tavilyApiKey) {
