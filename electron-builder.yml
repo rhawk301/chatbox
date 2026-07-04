@@ -1,5 +1,8 @@
 productName: Chatbox
 appId: xyz.chatboxapp.app
+extraMetadata:
+  name: xyz.chatboxapp.app
+  productName: xyz.chatboxapp.app
 asar: true
 asarUnpack:
   - "**\\*.{node,dll}"
