@@ -6,6 +6,7 @@ import sanitizeFilename from 'sanitize-filename'
 import * as defaults from '../shared/defaults'
 import type { Config, Settings } from '../shared/types'
 import { getLogger } from './util'
+import { safeBackup } from './config-safe-backup'
 
 const logger = getLogger('store-node')
 
@@ -61,6 +62,8 @@ async function autoBackup() {
       }
     }
     await clearBackups()
+    // Secret-stripped staggered backup → ~/.config/xyz.chatboxapp.app/
+    await safeBackup(store.store as object)
   } catch (err) {
     logger.error('auto backup error:', err)
   }
