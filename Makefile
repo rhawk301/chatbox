@@ -13,6 +13,7 @@ LOG_START = @printf "\n=== make $@ [%s] ===\n" "$$(date '+%Y-%m-%d %H:%M:%S')" |
 
 .PHONY: help status install-deps dev build test clean \
         install install-dry-run uninstall package package-all \
+        stamp-dmg-icons \
         deploy-asar patch-asar patch-status patch-restore \
         log-show log-clear
 
@@ -116,10 +117,25 @@ uninstall:  ## Quit Chatbox and remove it from /Applications
 package: clean build  ## Clean + build JS + full electron-builder → release/build/*.dmg  (~5 min)
 	$(LOG_START)
 	$(PNPM) exec electron-builder build --publish never 2>&1 | tee -a $(LOG)
+	@$(MAKE) stamp-dmg-icons
 
 package-all: clean build  ## Clean + build JS + all platforms → release/build/
 	$(LOG_START)
 	$(PNPM) exec electron-builder build --publish never --win --mac --linux 2>&1 | tee -a $(LOG)
+	@$(MAKE) stamp-dmg-icons
+
+stamp-dmg-icons:  ## Embed app icon into each .dmg so Finder shows it (uses NSWorkspace)
+	@ICON=$$(pwd)/assets/icon.icns; \
+	  for dmg in release/build/*.dmg; do \
+	    [ -f "$$dmg" ] || continue; \
+	    DMG=$$(pwd -P)/$$dmg; \
+	    osascript -l JavaScript -e "ObjC.import('AppKit'); \
+	      var icon = \$$. NSImage.alloc.initWithContentsOfFile('$$ICON'); \
+	      \$$.NSWorkspace.sharedWorkspace.setIconForFileOptions(icon,'$$DMG',0);" \
+	    >/dev/null 2>&1 && \
+	    printf "  stamped icon → %s\n" "$$(basename $$dmg)" | tee -a $(LOG) || \
+	    printf "  warning: could not stamp icon → %s\n" "$$(basename $$dmg)"; \
+	  done
 
 # ── asar operations ───────────────────────────────────────────────────────────
 
