@@ -85,9 +85,7 @@ directories:
 extraResources:
   - ./assets/**
 
-publish:
-  - provider: s3
-    bucket: chatbox
-    endpoint: https://208624959c9d215edea0720162a740c1.r2.cloudflarestorage.com
-    path: /releases
-    channel: ${env.UPDATE_CHANNEL}
+# publish config removed — upstream uses ChatboxAI's private Cloudflare R2 bucket
+# with UPDATE_CHANNEL set only in their CI/CD. electron-builder validates this at
+# parse time even with --publish never, which aborts the DMG build. Not needed
+# for a local fork with no auto-update publishing.
