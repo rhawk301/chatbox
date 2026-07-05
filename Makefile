@@ -96,9 +96,11 @@ test:  ## Run test suite
 	$(LOG_START)
 	$(PNPM) test 2>&1 | tee -a $(LOG)
 
-clean:  ## Remove release/app/dist/ and release/build/
+clean:  ## Remove release/app/dist/, release/build/, release/app/node_modules/, .erb/dll/
 	$(LOG_START)
-	$(PNPM) exec ts-node .erb/scripts/clean.js 2>&1 | tee -a $(LOG)
+	@# ts-node clean.js uses ESM without .ts extension — broken on Node 22. Do it directly.
+	rm -rf release/app/dist release/build release/app/node_modules .erb/dll 2>&1 | tee -a $(LOG)
+	@printf "Clean done.\n" | tee -a $(LOG)
 
 # ── Install / package ─────────────────────────────────────────────────────────
 
@@ -111,13 +113,13 @@ uninstall:  ## Quit Chatbox and remove it from /Applications
 	$(LOG_START)
 	@bash scripts/install.sh --uninstall 2>&1 | tee -a $(LOG)
 
-package:  ## Full electron-builder build → release/build/*.dmg  (~5 min)
+package: clean build  ## Clean + build JS + full electron-builder → release/build/*.dmg  (~5 min)
 	$(LOG_START)
-	$(PNPM) run package 2>&1 | tee -a $(LOG)
+	$(PNPM) exec electron-builder build --publish never 2>&1 | tee -a $(LOG)
 
-package-all:  ## Build for all platforms → release/build/
+package-all: clean build  ## Clean + build JS + all platforms → release/build/
 	$(LOG_START)
-	$(PNPM) run package:all 2>&1 | tee -a $(LOG)
+	$(PNPM) exec electron-builder build --publish never --win --mac --linux 2>&1 | tee -a $(LOG)
 
 # ── asar operations ───────────────────────────────────────────────────────────
 
